@@ -23,7 +23,7 @@ router.get("/:id", blogFinder, async (req, res) => {
 });
 
 /*** PUT-REQUESTS ****/
-router.put("/:id", blogFinder, async (req, res) => {
+router.put("/:id", blogFinder, async (req, res, next) => {
   const blog = req.blog;
   if (blog) {
     blog.likes = req.body.likes;
@@ -36,12 +36,8 @@ router.put("/:id", blogFinder, async (req, res) => {
 
 /*** POST-REQUESTS ****/
 router.post("/", async (req, res) => {
-  try {
-    const blog = await Blog.create(req.body);
-    return res.json(blog);
-  } catch (error) {
-    return res.status(400).json({ error });
-  }
+  const blog = await Blog.create(req.body);
+  return res.json(blog);
 });
 
 /*** DELETE-REQUESTS ****/
