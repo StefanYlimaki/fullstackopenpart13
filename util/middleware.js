@@ -1,11 +1,17 @@
 const errorHandler = (error, req, res, next) => {
-  console.error(error);
 
   if(error.name === 'SequelizeDatabaseError') {
     res.status(401).json({ error: 'Something went wrong'})
   } 
   if(error.name === 'SequelizeValidationError') {
-    res.status(401).json({ error: 'Validation error'})
+    const errorMessages = [];
+    error.errors.forEach(e => errorMessages.push(e.message))
+    res.status(401).json({ error: errorMessages })
+  }
+  if(error.name === 'SequelizeUniqueConstraintError') {
+    const errorMessages = [];
+    error.errors.forEach(e => errorMessages.push(e.message))
+    res.status(401).json({ error: errorMessages })
   }
 
   next(error);
