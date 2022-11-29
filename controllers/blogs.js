@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const { Blog, User } = require("../models");
+const { Op } = require("sequelize");
 
 const jwt = require("jsonwebtoken");
 const { SECRET } = require("../util/config");
@@ -27,12 +28,25 @@ const blogFinder = async (req, res, next) => {
 
 /*** GET-REQUESTS ****/
 router.get("/", async (req, res) => {
+  
+  let search = req.query.search
+  console.log('search', search)
+  if(search === undefined){
+    search = '';
+  }
+  
+  
   const blogs = await Blog.findAll({
-    attributes: { exclude: ['userId'] },
+    where: {
+      title: {
+        [Op.iLike]: `%${search}%`
+      }
+    },
+    attributes: { exclude: ["userId"] },
     include: {
       model: User,
-      attributes: ['name']
-    }
+      attributes: ["name"],
+    },
   });
   console.log(JSON.stringify(blogs, null, 2));
   res.json(blogs);
@@ -68,14 +82,13 @@ router.post("/", tokenExtractor, async (req, res) => {
 
 /*** DELETE-REQUESTS ****/
 router.delete("/:id", blogFinder, tokenExtractor, async (req, res) => {
-  const user = await User.findByPk(req.decodedToken.id)
+  const user = await User.findByPk(req.decodedToken.id);
 
   if (req.blog && req.blog.userId === user.id) {
     await req.blog.destroy();
   } else {
-    res.status(404).json('Can not delete someone else\'s blogposts')
+    res.status(404).json("Can not delete someone else's blogposts");
   }
-  
 });
 
 module.exports = router;
