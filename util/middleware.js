@@ -13,6 +13,9 @@ const errorHandler = (error, req, res, next) => {
     error.errors.forEach(e => errorMessages.push(e.message))
     res.status(401).json({ error: errorMessages })
   }
+  if(error.name === 'Error'){
+    res.status(401).json(error)
+  }
 
   next(error);
 };

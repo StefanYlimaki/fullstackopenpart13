@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
 const { sequelize } = require("../util/db");
+const { ValidationError } = require('sequelize')
 
 class Blog extends Model {}
 
@@ -24,6 +25,17 @@ Blog.init(
     likes: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+    },
+    year: {
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidYear(year) {
+          const date = new Date();
+          if (year < 1991 || year > date.getFullYear()) {
+              throw new ValidationError({ message: 'Year should be something between 1991 and present' });
+          }
+        },
+      },
     },
   },
   {
