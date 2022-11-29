@@ -28,19 +28,18 @@ const blogFinder = async (req, res, next) => {
 
 /*** GET-REQUESTS ****/
 router.get("/", async (req, res) => {
-  
-  let search = req.query.search
-  console.log('search', search)
-  if(search === undefined){
-    search = '';
+  let search = req.query.search;
+  console.log("search", search);
+  if (search === undefined) {
+    search = "";
   }
-  
-  
+
   const blogs = await Blog.findAll({
     where: {
-      title: {
-        [Op.iLike]: `%${search}%`
-      }
+      [Op.or]: [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { author: { [Op.iLike]: `%${search}%` } },
+      ],
     },
     attributes: { exclude: ["userId"] },
     include: {
