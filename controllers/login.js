@@ -13,6 +13,12 @@ router.post("/", async (request, response) => {
     },
   });
 
+  if (user.disabled) {
+    return response.status(401).json({
+      error: 'account disabled, please contact admin'
+    })
+  }
+
   const passwordCorrect = body.password === "salainen";
 
   if (!(user && passwordCorrect)) {

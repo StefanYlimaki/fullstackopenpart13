@@ -1,23 +1,42 @@
-const errorHandler = (error, req, res, next) => {
+const jwt = require("jsonwebtoken");
+const { SECRET } = require("./config.js");
 
-  if(error.name === 'SequelizeDatabaseError') {
-    res.status(401).json({ error: 'Something went wrong'})
-  } 
-  if(error.name === 'SequelizeValidationError') {
-    const errorMessages = [];
-    error.errors.forEach(e => errorMessages.push(e.message))
-    res.status(401).json({ error: errorMessages })
+const tokenExtractor = async (req, res, next) => {
+  const authorization = req.get("authorization");
+  if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
+    try {
+      req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
+    } catch {
+      return res.status(401).json({ error: "token invalid" });
+    }
+  } else {
+    return res.status(401).json({ error: "token missing" });
   }
-  if(error.name === 'SequelizeUniqueConstraintError') {
-    const errorMessages = [];
-    error.errors.forEach(e => errorMessages.push(e.message))
-    res.status(401).json({ error: errorMessages })
+  next();
+};
+
+const errorHandler = (error, req, res, next) => {
+  if (error.name === "SequelizeDatabaseError") {
+    res.status(401).json({ error: "Something went wrong" });
   }
-  if(error.name === 'Error'){
-    res.status(401).json(error)
+  if (error.name === "SequelizeValidationError") {
+    const errorMessages = [];
+    error.errors.forEach((e) => errorMessages.push(e.message));
+    res.status(401).json({ error: errorMessages });
+  }
+  if (error.name === "SequelizeUniqueConstraintError") {
+    const errorMessages = [];
+    error.errors.forEach((e) => errorMessages.push(e.message));
+    res.status(401).json({ error: errorMessages });
+  }
+  if (error.name === "Error") {
+    res.status(401).json(error);
   }
 
   next(error);
 };
 
-module.exports = errorHandler;
+module.exports = {
+  tokenExtractor,
+  errorHandler,
+};
