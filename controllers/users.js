@@ -14,12 +14,25 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
+
+  let where = {
+    id: req.params.id,
+    '$readings.readingLists.user_id$': req.params.id,
+  }
+
+  if(req.query.read){
+    if(req.query.read === 'true'){
+      where = { ...where, '$readings.readingLists.read$' : true }
+    } else if (req.query.read === 'false'){
+      where = { ...where, '$readings.readingLists.read$' : false }
+    } else {
+      res.status(400).json({ error: 'malformatted read-value'})
+    }
+  }
+
   const user = await User.findOne({
     attributes: ['name', 'username'],
-    where: {
-      id: req.params.id,
-      '$readings.readingLists.user_id$': req.params.id,
-    },
+    where,
     include: [
       {
         model: Blog,
@@ -32,7 +45,7 @@ router.get("/:id", async (req, res) => {
         },
         include: {
           model: ReadingList,
-          attributes: ['read', 'id']
+          attributes: ['read', 'id'],
         }
       }
     ]
