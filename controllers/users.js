@@ -1,24 +1,43 @@
 const router = require("express").Router();
 
-const { User, Blog } = require("../models");
+const { User, Blog, ReadingList } = require("../models");
 
+/*** GET-REQUESTS ****/
 router.get("/", async (req, res) => {
   const users = await User.findAll({
     include: {
       model: Blog,
-      attributes: { exclude: ['userId'] }
+      attributes: { exclude: ["userId"] },
     },
   });
   res.json(users);
 });
 
-router.post("/", async (req, res) => {
-  const user = await User.create(req.body);
-  res.json(user);
-});
-
 router.get("/:id", async (req, res) => {
-  const user = await User.findByPk(req.params.id);
+  const user = await User.findOne({
+    attributes: ['name', 'username'],
+    where: {
+      id: req.params.id,
+      '$readings.readingLists.user_id$': req.params.id,
+    },
+    include: [
+      {
+        model: Blog,
+        as: 'readings',
+        attributes: {
+          exclude: ['userId']
+        },
+        through: {
+          attributes: [],
+        },
+        include: {
+          model: ReadingList,
+          attributes: ['read', 'id']
+        }
+      }
+    ]
+  })
+
   if (user) {
     res.json(user);
   } else {
@@ -26,6 +45,13 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+/*** POST-REQUESTS ****/
+router.post("/", async (req, res) => {
+  const user = await User.create(req.body);
+  res.json(user);
+});
+
+/*** PUT-REQUESTS ****/
 router.put("/:username", async (req, res) => {
   const user = await User.findOne({
     where: {
