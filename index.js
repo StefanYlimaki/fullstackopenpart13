@@ -7,13 +7,12 @@ const { connectToDatabase } = require("./util/db");
 const blogsRouter = require("./controllers/blogs");
 const usersRouter = require("./controllers/users");
 const loginRouter = require("./controllers/login");
-const authorRouter = require("./controllers/author");
+const authorRouter = require("./controllers/authors");
 const readingListsRouter = require("./controllers/readingLists")
 const logoutRouter = require("./controllers/logout")
 const {errorHandler} = require("./util/middleware");
 
-
-
+// Redirecting the requests based on address
 app.use(express.json());
 app.use("/api/blogs", blogsRouter);
 app.use("/api/users", usersRouter);

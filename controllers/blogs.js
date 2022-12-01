@@ -1,9 +1,10 @@
 const router = require("express").Router();
-const { Blog, User } = require("../models");
 const { Op } = require("sequelize");
 
-const { tokenExtractor } = require('../util/middleware')
+const { Blog, User } = require("../models");
+const { tokenExtractor } = require("../util/middleware");
 
+// Helper function to finding blogs by primary key
 const blogFinder = async (req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id);
   next();
@@ -12,11 +13,13 @@ const blogFinder = async (req, res, next) => {
 /*** GET-REQUESTS ****/
 router.get("/", async (req, res) => {
   let search = req.query.search;
-  console.log("search", search);
+  // If search-variable is not given, set it to empty string
   if (search === undefined) {
     search = "";
   }
 
+  // Find all blogs which title or author contains the search word
+  // Order by likes, Descending
   const blogs = await Blog.findAll({
     where: {
       [Op.or]: [
@@ -29,17 +32,15 @@ router.get("/", async (req, res) => {
       model: User,
       attributes: ["name"],
     },
-    order: [
-      ['likes', 'DESC']
-    ]
+    order: [["likes", "DESC"]],
   });
-  console.log(JSON.stringify(blogs, null, 2));
   res.json(blogs);
 });
+
+// Find the single blog based on given id
 router.get("/:id", blogFinder, async (req, res) => {
   const blog = req.blog;
   if (blog) {
-    console.log(blog.toJSON());
     res.json(blog);
   } else {
     res.status(404).end();
@@ -48,7 +49,10 @@ router.get("/:id", blogFinder, async (req, res) => {
 
 /*** PUT-REQUESTS ****/
 router.put("/:id", blogFinder, async (req, res, next) => {
+  // blog based on id, got from helper function blogFinder
   const blog = req.blog;
+
+  // If blog exists, set likes to be what was spesified in req.body.likes
   if (blog) {
     blog.likes = req.body.likes;
     await blog.save();
@@ -60,15 +64,20 @@ router.put("/:id", blogFinder, async (req, res, next) => {
 
 /*** POST-REQUESTS ****/
 router.post("/", tokenExtractor, async (req, res) => {
+  // authorizating the request
   const user = await User.findByPk(req.decodedToken.id);
+  // creating blog based on req.body + adding userId to be authorized user 
   const blog = await Blog.create({ ...req.body, userId: user.id });
   res.json(blog);
 });
 
 /*** DELETE-REQUESTS ****/
 router.delete("/:id", blogFinder, tokenExtractor, async (req, res) => {
+  // authorizating the request
   const user = await User.findByPk(req.decodedToken.id);
 
+  // if blog with that id was found and authorized user owns created the blog
+  // delete the blog
   if (req.blog && req.blog.userId === user.id) {
     await req.blog.destroy();
   } else {

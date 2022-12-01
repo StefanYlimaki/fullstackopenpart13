@@ -4,6 +4,11 @@ const { User, Blog } = require("../models");
 const { sequelize } = require("../util/db");
 
 router.get("/", async (req, res) => {
+  // find all authors and return fields:
+  // author: authors name
+  // likes: SUM of all likes of the authors blogs
+  // blogs: AMOUNT of all blogs of the author
+  // order by likes, Descending
   const authors = await Blog.findAll({
     attributes: [
       "author",
@@ -15,7 +20,6 @@ router.get("/", async (req, res) => {
         ['likes', 'DESC']
     ]
   });
-  console.log(JSON.stringify(authors, null, 2));
   res.json(authors);
 });
 

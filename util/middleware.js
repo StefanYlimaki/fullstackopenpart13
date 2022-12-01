@@ -4,10 +4,11 @@ const { DisabledToken } = require("../models");
 
 const tokenExtractor = async (req, res, next) => {
   const authorization = req.get("authorization");
+  // if there's authorization header and it starts with bearer 
   if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
     try {
-      if (
-        DisabledToken.findOne({
+      // if token is on list of disabled tokens, return error
+      if (DisabledToken.findOne({
           where: {
             token: authorization.substring(7),
           },
@@ -15,6 +16,7 @@ const tokenExtractor = async (req, res, next) => {
       ) {
         return res.status(401).json({ error: "old token" });
       }
+      // else add decoded token to the req
       req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
     } catch {
       return res.status(401).json({ error: "token invalid" });
