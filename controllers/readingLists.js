@@ -8,12 +8,13 @@ router.post("/", tokenExtractor, async (req, res) => {
   if (req.body.userId === req.decodedToken.id) {
     // add new reading to reading list
     const entry = await ReadingList.create(req.body);
-    res.json(entry);
+    res.json(entry).end();
+  } else {
+    // otherwise return error
+    res
+      .status(401)
+      .json({ error: "could make changes to reading list not yours" });
   }
-  // otherwise return error
-  res
-    .status(401)
-    .json({ error: "could make changes to reading list not yours" });
 });
 
 router.put("/:id", tokenExtractor, async (req, res) => {
@@ -36,7 +37,7 @@ router.put("/:id", tokenExtractor, async (req, res) => {
       res.status(400).json({ error: "read-value missing" });
     }
   } else {
-    // otherwise return error 
+    // otherwise return error
     res
       .status(400)
       .json({ error: "couldn't make changes to reading not yours" });

@@ -1,7 +1,7 @@
 const Blog = require("./blog");
 const ReadingList = require("./readingList");
 const User = require("./user");
-const DisabledToken = require("./disabledToken")
+const ActiveToken= require("./activeToken")
 
 User.hasMany(Blog)
 Blog.belongsTo(User)
@@ -19,5 +19,5 @@ module.exports = {
   Blog,
   User,
   ReadingList,
-  DisabledToken
+  ActiveToken
 };

@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const router = require("express").Router();
 
 const { SECRET } = require("../util/config");
-const { User } = require("../models");
+const { User, ActiveToken } = require("../models");
 
 
 // Login function
@@ -42,6 +42,10 @@ router.post("/", async (request, response) => {
 
   // create token for the user, that is his/hers used for authentication later on when it's needed
   const token = jwt.sign(userForToken, SECRET);
+
+  // add token to active tokens
+  const activeToken = await ActiveToken.create({ token })
+  console.log(JSON.stringify(activeToken, null, 2))
 
   response
     .status(200)

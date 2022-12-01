@@ -1,20 +1,18 @@
 const jwt = require("jsonwebtoken");
 const { SECRET } = require("./config.js");
-const { DisabledToken } = require("../models");
+const { ActiveToken } = require("../models");
 
 const tokenExtractor = async (req, res, next) => {
   const authorization = req.get("authorization");
   // if there's authorization header and it starts with bearer 
   if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
+    // check if token is active
     try {
-      // if token is on list of disabled tokens, return error
-      if (DisabledToken.findOne({
-          where: {
-            token: authorization.substring(7),
-          },
-        })
-      ) {
-        return res.status(401).json({ error: "old token" });
+      const active = await ActiveToken.findOne({ where: { token: authorization.substring(7) } })
+      // if not
+      if (active === null ) {
+        // return error
+        return res.status(401).json({ error: "token not active" });
       }
       // else add decoded token to the req
       req.decodedToken = jwt.verify(authorization.substring(7), SECRET);

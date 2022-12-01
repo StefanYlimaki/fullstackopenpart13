@@ -1,9 +1,9 @@
 const { Model, DataTypes } = require("sequelize");
 const { sequelize } = require("../util/db");
 
-class DisabledToken extends Model {}
+class ActiveToken extends Model {}
 
-DisabledToken.init(
+ActiveToken.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -14,14 +14,14 @@ DisabledToken.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
-    },
+    }
   },
   {
     sequelize,
     underscored: true,
-    timestamps: false,
-    modelName: "disabledToken",
+    timestamps: true,
+    modelName: "activeToken",
   }
 );
 
-module.exports = DisabledToken;
+module.exports = ActiveToken;
