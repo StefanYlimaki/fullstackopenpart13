@@ -1,10 +1,20 @@
 const jwt = require("jsonwebtoken");
 const { SECRET } = require("./config.js");
+const { DisabledToken } = require("../models");
 
 const tokenExtractor = async (req, res, next) => {
   const authorization = req.get("authorization");
   if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
     try {
+      if (
+        DisabledToken.findOne({
+          where: {
+            token: authorization.substring(7),
+          },
+        })
+      ) {
+        return res.status(401).json({ error: "old token" });
+      }
       req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
     } catch {
       return res.status(401).json({ error: "token invalid" });
